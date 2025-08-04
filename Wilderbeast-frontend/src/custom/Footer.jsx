@@ -8,7 +8,7 @@ const Footer = () => {
         <a href="#">Terms of Service</a>
         <a href="#">Privacy Policy</a>
       </div>
-      <p>@2024 DriveNow. All rights reserved.</p>
+      <p>@2024 Wilder Beast. All rights reserved.</p>
     </footer>
   );
 }

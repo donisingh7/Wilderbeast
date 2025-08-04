@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 export default function Nav() {
   return (
     <nav className="flex items-center justify-between px-8 py-4 border-b shadow-sm bg-white">
-      <div className="flex items-center space-x-2 font-bold text-lg">
-        <div className="w-5 h-5 bg-black rounded-sm"></div>
-        <span className="text-3xl text-red-200 font-extrabold">DriveEasy</span>
+      <div className="flex items-center gap-3 select-none">
+        <img src="/images/wilderbeast-logo.jpg" alt="Wilder Beast Logo" className="h-10 w-auto object-contain" />
+        <span className="text-xl font-extrabold text-black tracking-wide leading-tight">WILDER BEAST</span>
       </div>
 
       <div className="flex items-center space-x-8 text-sm text-gray-700">

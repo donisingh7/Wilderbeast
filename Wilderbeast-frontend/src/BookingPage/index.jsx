@@ -19,11 +19,10 @@ export default function BookingPage() {
   const [pickupDate, setPickupDate] = useState("");
   const [dropoffDate, setDropoffDate] = useState("");
 
-  // Get car data from location state or URL params
+  
   const car = location.state?.car || {};
 
   useEffect(() => {
-    // Get user data from localStorage
     const userData = localStorage.getItem('user');
     if (userData) {
       setUser(JSON.parse(userData));
@@ -96,7 +95,6 @@ export default function BookingPage() {
         throw new Error(data.message || 'Failed to create booking');
       }
 
-      // Navigate to confirmation page with booking data
       navigate('/confirm', { state: { booking: data } });
     } catch (err) {
       setError(err.message);

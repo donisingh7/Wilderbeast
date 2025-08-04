@@ -6,6 +6,7 @@ import BookingPage from "./BookingPage/index.jsx";
 import ProfilePage from "./ProfilePage/index.jsx";
 import ConfirmationFinalPage from "./ConfirmationPage/index.jsx";
 import ContactPage from "./ContactPage";
+import AboutPage from "./AboutPage";
 
 
 // 🔽 Import login and register pages
@@ -29,6 +30,7 @@ const App = () => (
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/confirm" element={<ConfirmationFinalPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/about" element={<AboutPage />} />
 
     </Routes>
   </Router>

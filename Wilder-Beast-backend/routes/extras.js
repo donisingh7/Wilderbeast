@@ -1,4 +1,3 @@
-// routes/extras.js
 const express = require('express');
 const router = express.Router();
 
@@ -20,10 +19,8 @@ router.get('/:id', getExtraById);
 router.post('/', createExtra);
 
 
-// @access  Admin
 router.put('/:id', updateExtra);
 
-// @access  Admin
 router.delete('/:id', deleteExtra);
 
 module.exports = router;

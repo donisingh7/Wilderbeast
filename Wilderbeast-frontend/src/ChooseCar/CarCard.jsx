@@ -5,11 +5,9 @@ const CarCard = ({ title, price, image, car }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    // Navigate to booking page with car data
     navigate('/booking', { state: { car } });
   };
 
-  // Get the first image from the images array or use fallback
   const getCarImage = () => {
     if (car?.images && car.images.length > 0) {
       // Use public folder path
@@ -18,15 +16,25 @@ const CarCard = ({ title, price, image, car }) => {
     if (image) {
       return image;
     }
-    // Return appropriate fallback image based on car make
     const make = car?.make || 'compact';
     switch (make.toLowerCase()) {
       case 'toyota':
+      case 'ford':
         return '/images/compact.jpg';
       case 'bmw':
-        return '/images/bmw.jpg';
+      case 'mahindra':
+        return '/images/SUV.jpg'; 
       case 'tesla':
         return '/images/tesla.jpg';
+      case 'honda':
+      case 'audi':
+        return '/images/sedan.jpg';
+      case 'maruti':
+        return '/images/economy.jpg';
+      case 'hyundai':
+        return '/images/standard.jpg';
+      case 'mercedes':
+        return '/images/full-size.jpg';
       default:
         return '/images/compact.jpg';
     }
@@ -57,6 +65,9 @@ const CarCard = ({ title, price, image, car }) => {
           src={getCarImage()}
           alt={`${title} car`}
           className="w-full h-full object-cover"
+          onError={(e) => {
+            e.target.src = '/images/compact.jpg'; 
+          }}
         />
       </div>
     </div>

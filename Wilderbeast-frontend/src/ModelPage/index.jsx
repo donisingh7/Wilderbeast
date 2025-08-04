@@ -11,7 +11,6 @@ const TeslaModelPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Get car data from location state or fetch from API
   const carFromState = location.state?.car;
 
   useEffect(() => {
@@ -22,7 +21,6 @@ const TeslaModelPage = () => {
     try {
       setLoading(true);
       
-      // If we have car data from state, use it, otherwise fetch from API
       if (carFromState) {
         setCar(carFromState);
       } else if (carId) {
@@ -33,7 +31,6 @@ const TeslaModelPage = () => {
         }
       }
 
-      // Fetch reviews for this car
       const reviewsResponse = await fetch(`http://localhost:5000/api/reviews?car=${carId || carFromState?._id}`);
       if (reviewsResponse.ok) {
         const reviewsData = await reviewsResponse.json();
@@ -82,7 +79,6 @@ const TeslaModelPage = () => {
     );
   }
 
-  // Use car data or fallback to default Tesla data
   const carData = car || {
     make: 'Tesla',
     model: 'Model 3',
@@ -92,7 +88,6 @@ const TeslaModelPage = () => {
     description: 'This Tesla Model 3 is a sleek and modern electric vehicle, perfect for city driving and longer trips. It features a spacious interior, advanced technology, and a smooth, quiet ride. Enjoy the benefits of electric driving with zero emissions and instant torque.'
   };
 
-  // Get the first image from the images array or use fallback
   const getCarImage = () => {
     if (car?.images && car.images.length > 0) {
       // Use public folder path
@@ -101,7 +96,6 @@ const TeslaModelPage = () => {
     if (car?.image) {
       return car.image;
     }
-    // Return appropriate fallback image based on car make
     const make = car?.make || carData.make;
     switch (make.toLowerCase()) {
       case 'toyota':

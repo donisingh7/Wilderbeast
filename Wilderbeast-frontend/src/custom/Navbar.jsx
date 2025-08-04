@@ -22,12 +22,15 @@ const Navbar = () => {
 
   return (
     <nav className="flex justify-between items-center py-4 px-6 border-gray-200 bg-white shadow-md">
-      <div className="text-5xl text-red-200 font-extrabold">DriveNow</div>
+      <div className="flex items-center gap-3 select-none">
+        <img src="/images/wilderbeast-logo.jpg" alt="Wilder Beast Logo" className="h-12 w-auto object-contain" />
+        <span className="text-2xl font-extrabold text-black tracking-wide leading-tight">WILDER BEAST</span>
+      </div>
       <div className="flex items-center space-x-6">
         <a href="/choose-car" className="text-sm">Rent</a>
+        <a href="/about" className="text-sm">About Us</a>
         <a href="#" className="text-sm">Eat</a>
         <a href="#" className="text-sm">Charter</a>
-        
         {user ? (
           <>
             <span className="text-sm text-gray-600">Welcome, {user.name}</span>

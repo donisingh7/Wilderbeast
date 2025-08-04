@@ -1,9 +1,5 @@
-// controllers/reviewController.js
 const Review = require('../models/Review');
 
-/**
- * POST /api/reviews
- */
 exports.createReview = async (req, res) => {
   try {
     const { car, rating, comment } = req.body;
@@ -32,9 +28,6 @@ exports.createReview = async (req, res) => {
   }
 };
 
-/**
- * GET /api/reviews?car=<carId>
- */
 exports.listReviews = async (req, res) => {
   try {
     const filter = {};
@@ -54,9 +47,6 @@ exports.listReviews = async (req, res) => {
   }
 };
 
-/**
- * GET /api/reviews/:reviewId
- */
 exports.getReviewById = async (req, res) => {
   try {
     const review = await Review.findById(req.params.reviewId)
@@ -74,9 +64,7 @@ exports.getReviewById = async (req, res) => {
   }
 };
 
-/**
- * PUT /api/reviews/:reviewId
- */
+
 exports.updateReview = async (req, res) => {
   try {
     const { rating, comment } = req.body;
@@ -99,9 +87,7 @@ exports.updateReview = async (req, res) => {
   }
 };
 
-/**
- * DELETE /api/reviews/:reviewId
- */
+
 exports.deleteReview = async (req, res) => {
   try {
     const user = req.user._id;

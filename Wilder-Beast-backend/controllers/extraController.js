@@ -1,9 +1,5 @@
-// controllers/extraController.js
 const Extra = require('../models/Extra');
 
-/**
- * GET /api/extras
- */
 exports.listExtras = async (req, res) => {
   try {
     const extras = await Extra.find().sort('name');
@@ -14,9 +10,6 @@ exports.listExtras = async (req, res) => {
   }
 };
 
-/**
- * GET /api/extras/:id
- */
 exports.getExtraById = async (req, res) => {
   try {
     const extra = await Extra.findById(req.params.id);
@@ -28,9 +21,6 @@ exports.getExtraById = async (req, res) => {
   }
 };
 
-/**
- * POST /api/extras
- */
 exports.createExtra = async (req, res) => {
   try {
     const { name, description, dailyPrice } = req.body;
@@ -42,9 +32,6 @@ exports.createExtra = async (req, res) => {
   }
 };
 
-/**
- * PUT /api/extras/:id
- */
 exports.updateExtra = async (req, res) => {
   try {
     const updates = req.body;
@@ -60,9 +47,6 @@ exports.updateExtra = async (req, res) => {
   }
 };
 
-/**
- * DELETE /api/extras/:id
- */
 exports.deleteExtra = async (req, res) => {
   try {
     const extra = await Extra.findByIdAndDelete(req.params.id);

@@ -1,4 +1,3 @@
-// seedBookings.js
 require('dotenv').config();
 const mongoose = require('mongoose');
 
@@ -30,7 +29,6 @@ async function seed() {
     {
       user:           user._id,
       car:            cars[0]._id,
-      // <-- match your schema field names
       pickupDate:     now,
       dropoffDate:    tomorrow,
       extras:         extras.slice(0,1).map(e => e._id),

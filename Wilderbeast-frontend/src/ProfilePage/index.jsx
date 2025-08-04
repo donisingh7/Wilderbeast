@@ -108,7 +108,10 @@ export default function ProfilePage() {
 
       <aside className="w-64 border-r px-6 py-8 flex flex-col justify-between bg-white">
         <div>
-          <h1 className="text-4xl text-red-200 font-bold mb-5">DriveNow</h1>
+          <div className="flex items-center gap-3 mb-5">
+            <img src="/images/wilderbeast-logo.jpg" alt="Wilder Beast Logo" className="h-8 w-auto object-contain" />
+            <span className="text-2xl font-extrabold text-black tracking-wide">WILDER BEAST</span>
+          </div>
           <nav className="space-y-2 text-sm text-gray-700">
             <div className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
               <Home size={18} /> <span>Home</span>

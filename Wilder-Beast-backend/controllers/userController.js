@@ -1,10 +1,7 @@
-// controllers/userController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
-/**
- * GET /api/users
- */
+
 exports.listUsers = async (req, res) => {
   try {
     const users = await User.find().select('-password'); // omit passwords
@@ -15,9 +12,7 @@ exports.listUsers = async (req, res) => {
   }
 };
 
-/**
- * GET /api/users/:userId
- */
+
 exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select('-password');
@@ -29,9 +24,7 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-/**
- * POST /api/users
- */
+
 exports.createUser = async (req, res) => {
   try {
     const { name, email, password, phoneNumber, address, dateOfBirth } = req.body;
@@ -65,13 +58,10 @@ exports.createUser = async (req, res) => {
   }
 };
 
-/**
- * PUT /api/users/:userId
- */
+
 exports.updateUser = async (req, res) => {
   try {
     const updates = { ...req.body };
-    // Prevent password changes here unless you hash it
     delete updates.password;
 
     const user = await User.findByIdAndUpdate(
@@ -88,9 +78,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-/**
- * DELETE /api/users/:userId
- */
 exports.deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(req.params.userId);

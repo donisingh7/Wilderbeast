@@ -1,11 +1,8 @@
-// controllers/authController.js
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-/**
- * POST /api/auth/register
- */
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password, phoneNumber, address, dateOfBirth } = req.body;
@@ -49,9 +46,7 @@ exports.register = async (req, res) => {
   }
 };
 
-/**
- * POST /api/auth/login
- */
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -88,9 +83,7 @@ exports.login = async (req, res) => {
   }
 };
 
-/**
- * GET /api/auth/me
- */
+
 exports.getMe = async (req, res) => {
   try {
     res.json(req.user);

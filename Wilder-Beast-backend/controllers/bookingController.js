@@ -1,10 +1,6 @@
-// controllers/bookingController.js
 const Booking = require('../models/Booking');
 
-/**
- * POST /api/bookings
- * Creates a new booking
- */
+
 exports.createBooking = async (req, res) => {
   try {
     const { user, car, pickupDate, dropoffDate, extras } = req.body;
@@ -17,10 +13,6 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-/**
- * GET /api/bookings/:bookingId
- * Retrieves a single booking by ID
- */
 exports.getBookingById = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -36,10 +28,6 @@ exports.getBookingById = async (req, res) => {
   }
 };
 
-/**
- * GET /api/bookings?user=<userId>
- * Lists bookings, optionally filtered by user
- */
 
 exports.listBookings = async (req, res) => {
   console.log('🔍 listBookings called, query:', req.query);

@@ -1,16 +1,15 @@
-// models/Car.js
 const mongoose = require('mongoose');
 
 const carSchema = new mongoose.Schema({
-  make:           { type: String, required: true },  // e.g. "Toyota"
-  model:          { type: String, required: true },  // e.g. "Innova"
-  year:           { type: Number, required: true },  // e.g. 2023
-  seats:          { type: Number, required: true },  // e.g. 4 or 6
+  make:           { type: String, required: true }, 
+  model:          { type: String, required: true },  
+  year:           { type: Number, required: true },  
+  seats:          { type: Number, required: true },  
   transmission:   { type: String, enum: ['manual','automatic'], default: 'automatic' },
-  dailyRate:      { type: Number, required: true },  // rental price per day
-  securityDeposit:{ type: Number, default: 0 },      // deposit amount
-  images:         { type: [String], default: [] },   // array of image URLs
-  features:       { type: [String], default: [] },   // e.g. ["GPS","AC","Bluetooth"]
+  dailyRate:      { type: Number, required: true },  
+  securityDeposit:{ type: Number, default: 0 },      
+  images:         { type: [String], default: [] },   
+  features:       { type: [String], default: [] },   
   location: {
     city:    { type: String, required: true },
     address: { type: String, required: true },
@@ -22,5 +21,5 @@ const carSchema = new mongoose.Schema({
   createdAt:      { type: Date, default: Date.now }
 });
 
-// Export the model
+
 module.exports = mongoose.model('Car', carSchema);

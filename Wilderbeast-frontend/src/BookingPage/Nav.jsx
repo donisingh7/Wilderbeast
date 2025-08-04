@@ -6,11 +6,9 @@ const Nav = () => {
   return (
     <nav className="flex justify-between items-center py-4 px-6 bg-white shadow-md">
       <div className="flex items-center space-x-10">
-        <div className="text-xl font-bold text-black flex items-center space-x-1">
-          <div className="w-5 h-5 bg-black mr-1" />
-          <div className="text-3xl text-red-200 font-extrabold mb-1">
-            DriveGo
-          </div>
+        <div className="flex items-center gap-3 select-none">
+          <img src="/images/wilderbeast-logo.jpg" alt="Wilder Beast Logo" className="h-10 w-auto object-contain" />
+          <span className="text-xl font-extrabold text-black tracking-wide leading-tight">WILDER BEAST</span>
         </div>
       </div>
 

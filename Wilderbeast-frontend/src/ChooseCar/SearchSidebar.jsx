@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 
-const SearchSidebar = ({ onFilterChange }) => {
+const SearchSidebar = ({ onFilterChange, currentFilters = {} }) => {
   const [filters, setFilters] = useState({
-    city: '',
-    brand: '',
-    priceMin: '',
-    priceMax: ''
+    city: currentFilters.city || '',
+    brand: currentFilters.brand || '',
+    priceMin: currentFilters.priceMin || '',
+    priceMax: currentFilters.priceMax || ''
   });
 
   const handleFilterChange = (key, value) => {
@@ -13,6 +13,16 @@ const SearchSidebar = ({ onFilterChange }) => {
     setFilters(newFilters);
     onFilterChange(newFilters);
   };
+
+  
+  React.useEffect(() => {
+    setFilters({
+      city: currentFilters.city || '',
+      brand: currentFilters.brand || '',
+      priceMin: currentFilters.priceMin || '',
+      priceMax: currentFilters.priceMax || ''
+    });
+  }, [currentFilters]);
 
   return (
     <div className="w-full max-w-sm p-6 rounded-xl bg-white shadow-md border border-gray-200">
