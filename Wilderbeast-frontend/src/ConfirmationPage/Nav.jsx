@@ -10,12 +10,9 @@ export default function Nav() {
       </div>
 
       <div className="flex items-center space-x-8 text-sm text-gray-700">
-        <a href="#" className="hover:text-black">Ride</a>
-        <a href="#" className="hover:text-black">Rent</a>
-        <a href="#" className="hover:text-black">Eat</a>
-        <a href="#" className="hover:text-black">Charter</a>
-        <a href="#" className="bg-gray-100 px-4 py-1.5 rounded text-black font-medium">Help</a>
-         <Link to="/profile">
+        <a href="#" className="hover:text-black">Rent a car</a>
+        <a href="/about" className="hover:text-black">About Us</a>
+        <Link to="/profile">
           <img
             src="https://randomuser.me/api/portraits/women/79.jpg"
             alt="avatar"

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Home, User, Clock, CreditCard, LogOut, HelpCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -113,9 +113,9 @@ export default function ProfilePage() {
             <span className="text-2xl font-extrabold text-black tracking-wide">WILDER BEAST</span>
           </div>
           <nav className="space-y-2 text-sm text-gray-700">
-            <div className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
+            <Link to="/homepage" className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
               <Home size={18} /> <span>Home</span>
-            </div>
+            </Link>
             <div className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
               <User size={18} /> <span>Bookings</span>
             </div>

@@ -10,22 +10,9 @@ const Navbar = () => {
           <img src="/images/wilderbeast-logo.jpg" alt="Wilder Beast Logo" className="h-10 w-auto object-contain" />
           <span className="text-xl font-extrabold text-black tracking-wide leading-tight">WILDER BEAST</span>
         </div>
-        <div className="flex space-x-6 text-sm text-gray-800">
-          <a href="#" className="text-sm">
-            Rent
-          </a>
-          <a href="#" className="text-sm">
-            Sell
-          </a>
-          <a href="#" className="text-sm">
-            Ride
-          </a>
-          <a href="#" className="text-sm">
-            Finance
-          </a>
-          <a href="#" className="text-sm">
-            Insurance
-          </a>
+        <div className="flex items-center space-x-6 text-sm text-gray-800">
+          <a href="#" className="text-sm">Rent</a>
+          <a href="/about" className="text-sm">About Us</a>
         </div>
       </div>
 

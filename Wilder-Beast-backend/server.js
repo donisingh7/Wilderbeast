@@ -6,7 +6,7 @@ const connectDB  = require('./config/db');
 const carRoutes  = require('./routes/cars');
 const bookingRoutes = require('./routes/bookings');
 const extrasRoutes = require('./routes/extras');
-// … other requires …
+const accessoriesRoutes = require('./routes/accessories');
 
 const app = express();
 app.use(cors());
@@ -17,6 +17,7 @@ connectDB();
 
 app.use('/api/cars', carRoutes);
 app.use('/api/extras', extrasRoutes);
+app.use('/api/accessories', accessoriesRoutes);
 app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/auth', require('./routes/auth'));

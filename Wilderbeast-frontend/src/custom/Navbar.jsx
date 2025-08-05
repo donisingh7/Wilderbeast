@@ -29,8 +29,6 @@ const Navbar = () => {
       <div className="flex items-center space-x-6">
         <a href="/choose-car" className="text-sm">Rent</a>
         <a href="/about" className="text-sm">About Us</a>
-        <a href="#" className="text-sm">Eat</a>
-        <a href="#" className="text-sm">Charter</a>
         {user ? (
           <>
             <span className="text-sm text-gray-600">Welcome, {user.name}</span>

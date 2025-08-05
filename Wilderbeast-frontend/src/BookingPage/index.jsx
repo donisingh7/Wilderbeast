@@ -16,10 +16,12 @@ export default function BookingPage() {
     childSeat: false,
     additionalDriver: false,
   });
+  const [accessories, setAccessories] = useState([]);
+  const [selectedAccessories, setSelectedAccessories] = useState([]);
   const [pickupDate, setPickupDate] = useState("");
   const [dropoffDate, setDropoffDate] = useState("");
+  const [showAccessories, setShowAccessories] = useState(false); // ✅ New state added
 
-  
   const car = location.state?.car || {};
 
   useEffect(() => {
@@ -29,8 +31,32 @@ export default function BookingPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const fetchAccessories = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/accessories');
+        const data = await response.json();
+        setAccessories(data);
+      } catch (error) {
+        console.error('Error fetching accessories:', error);
+      }
+    };
+    fetchAccessories();
+  }, []);
+
   const toggleExtra = (extra) => {
     setExtras({ ...extras, [extra]: !extras[extra] });
+  };
+
+  const toggleAccessory = (accessory) => {
+    setSelectedAccessories(prev => {
+      const isSelected = prev.find(item => item._id === accessory._id);
+      if (isSelected) {
+        return prev.filter(item => item._id !== accessory._id);
+      } else {
+        return [...prev, accessory];
+      }
+    });
   };
 
   const calculateDays = () => {
@@ -46,8 +72,11 @@ export default function BookingPage() {
     const basePrice = car.dailyRate || 0;
     const protectionCost = protection === "Basic" ? 15 : protection === "Standard" ? 25 : 35;
     const extrasCost = Object.values(extras).filter(Boolean).length * 10;
-    
-    return (basePrice * days) + (protectionCost * days) + (extrasCost * days);
+    const accessoriesCost = selectedAccessories.reduce((total, accessory) => {
+      return total + (accessory.price_inr || 0);
+    }, 0);
+
+    return (basePrice * days) + (protectionCost * days) + (extrasCost * days) + accessoriesCost;
   };
 
   const handleSubmit = async () => {
@@ -77,6 +106,7 @@ export default function BookingPage() {
         dropoffDate,
         protection,
         extras: Object.keys(extras).filter(key => extras[key]),
+        accessories: selectedAccessories.map(acc => acc._id),
         totalAmount: calculateTotal()
       };
 
@@ -203,8 +233,47 @@ export default function BookingPage() {
           ))}
         </section>
 
+        <section className="mb-8">
+          <h2 
+            className="font-semibold text-lg mb-4 cursor-pointer"
+            onClick={() => setShowAccessories(!showAccessories)}
+          >
+            4. Accessories {showAccessories ? '▲' : '▼'}
+          </h2>
+
+          {showAccessories && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {accessories.map((accessory) => {
+                const isSelected = selectedAccessories.find(item => item._id === accessory._id);
+                return (
+                  <label 
+                    key={accessory._id} 
+                    className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${
+                      isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={!!isSelected}
+                      onChange={() => toggleAccessory(accessory)}
+                      className="w-4 h-4"
+                    />
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{accessory.item}</div>
+                      <div className="text-xs text-gray-500">{accessory.category}</div>
+                      {accessory.price_inr && (
+                        <div className="text-xs text-green-600">₹{accessory.price_inr}</div>
+                      )}
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </section>
+
         <section className="mb-10">
-          <h2 className="font-semibold text-lg mb-4">4. Review</h2>
+          <h2 className="font-semibold text-lg mb-4">5. Review</h2>
           <div className="text-sm text-gray-700 space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-500">Rental days</span>
@@ -223,6 +292,15 @@ export default function BookingPage() {
                     .map(([k]) => k.replace(/([A-Z])/g, " $1"));
                   return selected.length > 0 ? selected.join(", ") : "None";
                 })()}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-500">Accessories</span>
+              <span>
+                {selectedAccessories.length > 0 
+                  ? `${selectedAccessories.length} item${selectedAccessories.length !== 1 ? 's' : ''} selected`
+                  : "None"
+                }
               </span>
             </div>
             <div className="flex justify-between font-semibold border-t pt-2">
