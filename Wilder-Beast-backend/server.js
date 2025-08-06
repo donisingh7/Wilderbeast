@@ -7,6 +7,7 @@ const carRoutes  = require('./routes/cars');
 const bookingRoutes = require('./routes/bookings');
 const extrasRoutes = require('./routes/extras');
 const accessoriesRoutes = require('./routes/accessories');
+const contactRoutes = require('./routes/contact');
 
 const app = express();
 app.use(cors());
@@ -22,6 +23,8 @@ app.use('/api/bookings', require('./routes/bookings'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/reviews', require('./routes/reviews'));
+app.use('/api/contact', contactRoutes);
+
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

@@ -30,7 +30,7 @@ const BookingSchema = new Schema({
   },
   totalAmount: {
     type: Number,
-    required: false
+    required: true
   },
   createdAt: {
     type: Date,
