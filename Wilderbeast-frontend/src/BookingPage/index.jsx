@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import Navbar from "./Nav";
 import { CalendarDays } from "lucide-react";
 
@@ -8,304 +8,216 @@ export default function BookingPage() {
   const location = useLocation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+
+  // --- FIX: Check for car data on page load ---
+  const car = location.state?.car;
 
   const [protection, setProtection] = useState("Basic");
-  const [extras, setExtras] = useState({
-    GPS: false,
-    childSeat: false,
-    additionalDriver: false,
-  });
+  const [extras, setExtras] = useState({ GPS: false, childSeat: false, additionalDriver: false });
   const [accessories, setAccessories] = useState([]);
   const [selectedAccessories, setSelectedAccessories] = useState([]);
   const [pickupDate, setPickupDate] = useState("");
   const [dropoffDate, setDropoffDate] = useState("");
-  const [showAccessories, setShowAccessories] = useState(false); // ✅ New state added
-
-  const car = location.state?.car || {};
+  const [showAccessories, setShowAccessories] = useState(true); 
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    }
+    if (userData) setUser(JSON.parse(userData));
   }, []);
 
   useEffect(() => {
-    const fetchAccessories = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/accessories');
-        const data = await response.json();
-        setAccessories(data);
-      } catch (error) {
-        console.error('Error fetching accessories:', error);
-      }
-    };
-    fetchAccessories();
+    fetch('http://localhost:5000/api/accessories')
+      .then(res => res.json())
+      .then(data => setAccessories(data))
+      .catch(err => console.error(err));
   }, []);
 
-  const toggleExtra = (extra) => {
-    setExtras({ ...extras, [extra]: !extras[extra] });
-  };
-
-  const toggleAccessory = (accessory) => {
-    setSelectedAccessories(prev => {
-      const isSelected = prev.find(item => item._id === accessory._id);
-      if (isSelected) {
-        return prev.filter(item => item._id !== accessory._id);
-      } else {
-        return [...prev, accessory];
-      }
-    });
-  };
-
   const calculateDays = () => {
-    if (!pickupDate || !dropoffDate) return 0;
-    const start = new Date(pickupDate);
-    const end = new Date(dropoffDate);
-    const diffTime = Math.abs(end - start);
-    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (!pickupDate || !dropoffDate || new Date(dropoffDate) <= new Date(pickupDate)) return 0;
+    const diff = new Date(dropoffDate) - new Date(pickupDate);
+    return Math.ceil(diff / (1000*60*60*24));
   };
 
   const calculateTotal = () => {
     const days = calculateDays();
-    const basePrice = car.dailyRate || 0;
-    const protectionCost = protection === "Basic" ? 15 : protection === "Standard" ? 25 : 35;
+    if (days <= 0) return 0;
+    const base = car?.dailyRate || 0;
+    const protCost = protection === 'Basic' ? 15 : protection === 'Standard' ? 25 : 35;
     const extrasCost = Object.values(extras).filter(Boolean).length * 10;
-    const accessoriesCost = selectedAccessories.reduce((total, accessory) => {
-      return total + (accessory.price_inr || 0);
-    }, 0);
-
-    return (basePrice * days) + (protectionCost * days) + (extrasCost * days) + accessoriesCost;
+    const accCost = selectedAccessories.reduce((sum,a)=> sum + (a.price_inr||0),0);
+    return (base * days) + (protCost * days) + (extrasCost * days) + accCost;
   };
 
   const handleSubmit = async () => {
-    if (!user) {
-      setError('Please login to create a booking');
+    setError('');
+    if (!pickupDate || !dropoffDate) { setError('Please select both pickup and drop-off dates.'); return; }
+    
+    if (new Date(dropoffDate) <= new Date(pickupDate)) {
+      setError('Drop-off date must be after the pickup date.');
       return;
     }
 
-    if (!pickupDate || !dropoffDate) {
-      setError('Please select pickup and dropoff dates');
-      return;
-    }
+    if (!user) { setError('You must be logged in to book.'); return; }
 
-    if (!car._id) {
-      setError('No car selected');
-      return;
-    }
+    const booking = {
+      car: car._id,
+      pickupDate,
+      dropoffDate,
+      protection,
+      extras: Object.keys(extras).filter(k=>extras[k]),
+      accessories: selectedAccessories.map(a=>a._id),
+      totalAmount: calculateTotal()
+    };
 
     setLoading(true);
-    setError('');
-
     try {
-      const bookingData = {
-        user: user._id,
-        car: car._id,
-        pickupDate,
-        dropoffDate,
-        protection,
-        extras: Object.keys(extras).filter(key => extras[key]),
-        accessories: selectedAccessories.map(acc => acc._id),
-        totalAmount: calculateTotal()
-      };
-
-      const response = await fetch('http://localhost:5000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+      const res = await fetch('http://localhost:5000/api/bookings',{
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          Authorization:`Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(bookingData),
+        body:JSON.stringify(booking)
       });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create booking');
-      }
-
-      navigate('/confirm', { state: { booking: data } });
-    } catch (err) {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      navigate('/confirm',{state:{booking:data}});
+    } catch(err) {
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // --- FIX: If car data is missing, show an error message ---
+  if (!car || !car._id) {
+    return (
+        <div className="min-h-screen bg-white">
+            <Navbar />
+            <div className="max-w-3xl mx-auto px-6 py-10 text-center">
+                <h1 className="text-2xl font-semibold mb-4 text-red-600">Car Details Not Found</h1>
+                <p className="text-gray-600 mb-6">It seems the car information was lost. Please go back and select a car again.</p>
+                <Link to="/choose-car" className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                    Select a Car
+                </Link>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-
       <div className="max-w-3xl mx-auto px-6 py-10">
         <div className="text-sm text-gray-500 mb-2">
           <a href="#" className="underline">Rent a car</a> / <a href="#" className="underline">Select your car</a> / Your booking
         </div>
         <h1 className="text-2xl font-semibold mb-6">Your booking</h1>
 
-        {car.make && car.model && (
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <h3 className="font-semibold">{car.make} {car.model}</h3>
-            <p className="text-gray-600">${car.dailyRate}/day</p>
-          </div>
-        )}
+        <div className="bg-gray-50 p-4 rounded-lg mb-6">
+          <h3 className="font-semibold">{car.make} {car.model}</h3>
+          <p className="text-gray-600">₹{car.dailyRate.toLocaleString('en-IN')}/day</p>
+        </div>
 
         <div className="w-full bg-gray-200 h-1 mb-10">
           <div className="bg-black h-1 w-1/4"></div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
+        {error && <div className="mb-6 text-red-600 font-semibold p-3 bg-red-50 border border-red-200 rounded-lg">{error}</div>}
 
         <section className="mb-8">
           <h2 className="font-semibold text-lg mb-4">1. Dates</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="relative">
-              <input
-                type="date"
-                value={pickupDate}
-                onChange={(e) => setPickupDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
-            <div className="relative">
-              <input
-                type="date"
-                value={dropoffDate}
-                onChange={(e) => setDropoffDate(e.target.value)}
-                className="w-full border border-gray-300 rounded px-4 py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              />
-            </div>
+            <input type="date" value={pickupDate} min={today} onChange={e=>setPickupDate(e.target.value)} className="border p-2 rounded" />
+            <input type="date" value={dropoffDate} min={pickupDate || today} onChange={e=>setDropoffDate(e.target.value)} className="border p-2 rounded" disabled={!pickupDate} />
           </div>
         </section>
 
+        {/* ... (rest of your component code remains the same) ... */}
         <section className="mb-8">
           <h2 className="font-semibold text-lg mb-4">2. Protection</h2>
-          {["Basic", "Standard", "Premium"].map((option) => (
-            <label
-              key={option}
-              className={`flex items-center justify-between border px-6 py-4 rounded-lg mb-3 cursor-pointer ${
-                protection === option ? "border-black" : "border-gray-300"
-              }`}
-              onClick={() => setProtection(option)}
-            >
-              <div>
-                <h3 className="font-semibold">{option}</h3>
-                <p className="text-sm text-gray-500">
-                  {option === "Basic"
-                    ? "Covers basic damages"
-                    : option === "Standard"
-                    ? "Covers most damages"
-                    : "Covers all damages"}
-                </p>
+          {['Basic','Standard','Premium'].map(opt=> (
+            <label key={opt} className={`block border p-4 mb-3 rounded ${protection===opt?'border-black':''}`} onClick={()=>setProtection(opt)}>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold">{opt}</h3>
+                  <p className="text-sm text-gray-500">
+                    {opt==='Basic'?'Covers basic damages':opt==='Standard'?'Covers most damages':'Covers all damages'}
+                  </p>
+                </div>
+                <input type="radio" name="protection" checked={protection===opt} readOnly />
               </div>
-              <input
-                type="radio"
-                name="protection"
-                value={option}
-                checked={protection === option}
-                readOnly
-                className="w-5 h-5"
-              />
             </label>
           ))}
         </section>
 
         <section className="mb-8">
           <h2 className="font-semibold text-lg mb-4">3. Extras</h2>
-          {[
-            { label: "GPS", key: "GPS" },
-            { label: "Child seat", key: "childSeat" },
-            { label: "Additional driver", key: "additionalDriver" },
-          ].map((extra) => (
-            <label key={extra.key} className="flex items-center space-x-3 mb-3">
-              <input
-                type="checkbox"
-                checked={extras[extra.key]}
-                onChange={() => toggleExtra(extra.key)}
-                className="w-4 h-4"
-              />
-              <span>{extra.label}</span>
+          {['GPS','childSeat','additionalDriver'].map(key => (
+            <label key={key} className="inline-flex items-center mr-6">
+              <input type="checkbox" checked={extras[key]} onChange={()=>setExtras(prev=>({...prev,[key]:!prev[key]}))} />
+              <span className="ml-2 capitalize">{key.replace(/([A-Z])/g,' $1')}</span>
             </label>
           ))}
         </section>
 
         <section className="mb-8">
-          <h2 
+          <h2
             className="font-semibold text-lg mb-4 cursor-pointer"
             onClick={() => setShowAccessories(!showAccessories)}
           >
             4. Accessories {showAccessories ? '▲' : '▼'}
           </h2>
-
           {showAccessories && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {accessories.map((accessory) => {
-                const isSelected = selectedAccessories.find(item => item._id === accessory._id);
-                return (
-                  <label 
-                    key={accessory._id} 
-                    className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50 ${
-                      isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={!!isSelected}
-                      onChange={() => toggleAccessory(accessory)}
-                      className="w-4 h-4"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{accessory.item}</div>
-                      <div className="text-xs text-gray-500">{accessory.category}</div>
-                      {accessory.price_inr && (
-                        <div className="text-xs text-green-600">₹{accessory.price_inr}</div>
-                      )}
-                    </div>
-                  </label>
-                );
-              })}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {accessories.map(acc => (
+                <label key={acc._id} className="flex items-center border p-3 rounded">
+                  <input
+                    type="checkbox"
+                    checked={selectedAccessories.some(a => a._id === acc._id)}
+                    onChange={() => {
+                      setSelectedAccessories(prev =>
+                        prev.some(a => a._id === acc._id)
+                          ? prev.filter(a => a._id !== acc._id)
+                          : [...prev, acc]
+                      );
+                    }}
+                  />
+                  <div className="ml-3">
+                    <div className="font-medium text-sm">{acc.item}</div>
+                    <div className="text-xs text-gray-500">{acc.category}</div>
+                    <div className="text-xs text-green-600">₹{acc.price_inr}</div>
+                  </div>
+                </label>
+              ))}
             </div>
           )}
         </section>
 
-        <section className="mb-10">
+        <section className="mb-8">
           <h2 className="font-semibold text-lg mb-4">5. Review</h2>
-          <div className="text-sm text-gray-700 space-y-2">
-            <div className="flex justify-between">
-              <span className="text-gray-500">Rental days</span>
+          <div className="border-t pt-4 space-y-3">
+            <div className="flex justify-between text-sm">
+              <span>Rental days</span>
               <span>{calculateDays()} days</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Protection</span>
+            <div className="flex justify-between text-sm">
+              <span>Protection</span>
               <span>{protection}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Extras</span>
-              <span>
-                {(() => {
-                  const selected = Object.entries(extras)
-                    .filter(([, v]) => v)
-                    .map(([k]) => k.replace(/([A-Z])/g, " $1"));
-                  return selected.length > 0 ? selected.join(", ") : "None";
-                })()}
-              </span>
+            <div className="flex justify-between text-sm">
+              <span>Extras</span>
+              <span>{Object.entries(extras).filter(([, v]) => v).map(([k]) => k.replace(/([A-Z])/g,' $1')).join(', ') || 'None'}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500">Accessories</span>
-              <span>
-                {selectedAccessories.length > 0 
-                  ? `${selectedAccessories.length} item${selectedAccessories.length !== 1 ? 's' : ''} selected`
-                  : "None"
-                }
-              </span>
+            <div className="flex justify-between text-sm">
+              <span>Accessories</span>
+              <span>{selectedAccessories.length > 0 ? `${selectedAccessories.length} selected` : 'None'}</span>
             </div>
-            <div className="flex justify-between font-semibold border-t pt-2">
+            <div className="flex justify-between text-lg font-semibold">
               <span>Total</span>
-              <span>${calculateTotal()}</span>
+              <span>₹{calculateTotal()}</span>
             </div>
           </div>
         </section>
@@ -313,9 +225,9 @@ export default function BookingPage() {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="bg-blue-600 text-white py-3 px-6 rounded w-full text-center font-medium hover:bg-blue-700 disabled:bg-gray-400"
+          className="w-full bg-blue-600 text-white py-3 rounded mt-4 hover:bg-blue-700 disabled:bg-gray-400"
         >
-          {loading ? 'Creating Booking...' : 'Continue to payment'}
+          {loading ? 'Processing...' : 'Continue to payment'}
         </button>
       </div>
     </div>

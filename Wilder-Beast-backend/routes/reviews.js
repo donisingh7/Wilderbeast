@@ -1,21 +1,19 @@
-const router = require('express').Router();
+const router = require("express").Router();
 const { 
   createReview, 
   listReviews, 
   getReviewById, 
   updateReview, 
   deleteReview 
-} = require('../controllers/reviewController');
-const auth = require('../middleware/auth');
+} = require("../controllers/reviewController");
 
-router.get('/', listReviews);
+const verifyToken = require("../middleware/auth"); // ✅ Corrected
 
-router.get('/:reviewId', getReviewById);
+router.get("/", listReviews);
+router.get("/:reviewId", getReviewById);
 
-router.post('/', auth, createReview);
-
-router.put('/:reviewId', auth, updateReview);
-
-router.delete('/:reviewId', auth, deleteReview);
+router.post("/", verifyToken, createReview);       // ✅ Fixed
+router.put("/:reviewId", verifyToken, updateReview);
+router.delete("/:reviewId", verifyToken, deleteReview);
 
 module.exports = router;

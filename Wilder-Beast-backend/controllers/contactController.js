@@ -1,27 +1,25 @@
-import Contact from '../models/Contact.js';
-import nodemailer from 'nodemailer';
+const Contact = require('../models/Contact');
 
-export const submitContact = async (req, res, next) => {
+exports.submitContactForm = async (req, res) => {
   try {
     const { name, email, message } = req.body;
-    if (!name || !email || !message) {
-      return res.status(400).json({ error: 'All fields are required.' });
-    }
 
-    const contact = await Contact.create({ name, email, message });
+    const newContact = new Contact({ name, email, message });
+    await newContact.save();
 
-    const transporter = nodemailer.createTransport({ /* SMTP or SendGrid creds */ });
-    await transporter.sendMail({
-      from: '"WilderBeast Site" <no-reply@wilderbeast.in>',
-      to:   'info@wilderbeast.in',
-      subject: `New Contact Form Submission`,
-      html: `<p><strong>${name}</strong> (${email}) says:</p>
-             <p>${message}</p>`
-    });
-
-    res.status(201).json({ message: 'Thank you—we’ve received your message!' });
-
+    res.status(201).json({ message: 'Message sent successfully!' });
   } catch (err) {
-    next(err);
+    console.error('❌ Error submitting contact form:', err);
+    res.status(500).json({ message: 'Server error. Try again later.' });
+  }
+};
+
+exports.getAllContacts = async (req, res) => {
+  try {
+    const contacts = await Contact.find().sort('-createdAt');
+    res.json(contacts);
+  } catch (err) {
+    console.error('❌ Error fetching contacts:', err);
+    res.status(500).json({ message: 'Server error fetching contacts.' });
   }
 };

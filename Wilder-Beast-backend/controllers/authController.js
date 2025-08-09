@@ -16,12 +16,10 @@ exports.register = async (req, res) => {
       return res.status(409).json({ message: 'User with this email already exists' });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = new User({
       name,
       email,
-      password: hashedPassword,
+      password,
       phoneNumber,
       address,
       dateOfBirth
@@ -45,6 +43,7 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: 'Server error during registration' });
   }
 };
+
 
 
 exports.login = async (req, res) => {

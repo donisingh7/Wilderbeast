@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import CarCard from './CarCard';
 import SearchSidebar from './SearchSidebar';
 import {
@@ -20,7 +19,7 @@ const VehicleListing = () => {
     brand: '',
     priceMin: '',
     priceMax: '',
-    showBrands: false
+    showBrands: false,
   });
 
   useEffect(() => {
@@ -31,17 +30,12 @@ const VehicleListing = () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
-      
       Object.entries(filters).forEach(([key, value]) => {
         if (value) queryParams.append(key, value);
       });
 
       const response = await fetch(`http://localhost:5000/api/cars?${queryParams}`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch cars');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch cars');
       const data = await response.json();
       setCars(data);
     } catch (err) {
@@ -51,25 +45,21 @@ const VehicleListing = () => {
     }
   };
 
-  const handleFilterChange = (newFilters) => {
+  const handleFilterChange = newFilters => {
     setFilters(prev => ({ ...prev, ...newFilters }));
   };
 
-  if (loading) {
-    return (
-      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading cars...</div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+      <div className="text-lg">Loading cars...</div>
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="text-red-600">Error: {error}</div>
-      </div>
-    );
-  }
+  if (error) return (
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+      <div className="text-red-600">Error: {error}</div>
+    </div>
+  );
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -90,7 +80,7 @@ const VehicleListing = () => {
             <button className="flex items-center gap-2 border border-gray-200 px-4 py-1 rounded text-sm">
               <CreditCard size={16} /> Payment options
             </button>
-            <button 
+            <button
               className={`flex items-center gap-2 border px-4 py-1 rounded text-sm ${
                 filters.showBrands ? 'border-black bg-black text-white' : 'border-gray-200'
               }`}
@@ -98,7 +88,7 @@ const VehicleListing = () => {
             >
               <BadgePercent size={16} /> Brands
             </button>
-            <button 
+            <button
               className={`flex items-center gap-2 border px-4 py-1 rounded text-sm ${
                 filters.size === 'small' ? 'border-black bg-black text-white' : 'border-gray-200'
               }`}
@@ -106,7 +96,7 @@ const VehicleListing = () => {
             >
               <Car size={16} /> Small
             </button>
-            <button 
+            <button
               className={`flex items-center gap-2 border px-4 py-1 rounded text-sm ${
                 filters.size === 'medium' ? 'border-black bg-black text-white' : 'border-gray-200'
               }`}
@@ -114,7 +104,7 @@ const VehicleListing = () => {
             >
               <CarFront size={16} /> Medium
             </button>
-            <button 
+            <button
               className={`flex items-center gap-2 border px-4 py-1 rounded text-sm ${
                 filters.size === 'large' ? 'border-black bg-black text-white' : 'border-gray-200'
               }`}
@@ -124,83 +114,53 @@ const VehicleListing = () => {
             </button>
           </div>
 
-          {/* Brand Filter Dropdown */}
           {filters.showBrands && (
             <div className="mb-6 p-4 bg-white rounded-lg border border-gray-200">
               <h4 className="text-sm font-semibold mb-3">Select Brand</h4>
               <div className="flex flex-wrap gap-2">
-                {['Toyota', 'BMW', 'Tesla', 'Honda', 'Maruti', 'Hyundai', 'Mercedes', 'Audi', 'Mahindra', 'Ford'].map((brand) => (
+                {['Toyota', 'BMW', 'Tesla', 'Honda', 'Maruti', 'Hyundai', 'Mercedes', 'Audi', 'Mahindra', 'Ford'].map(brand => (
                   <button
                     key={brand}
                     className={`px-3 py-1 rounded text-sm border ${
                       filters.brand === brand ? 'bg-black text-white border-black' : 'border-gray-300 hover:border-gray-400'
                     }`}
                     onClick={() => handleFilterChange({ brand: filters.brand === brand ? '' : brand })}
-                  >
-                    {brand}
-                  </button>
+                  >{brand}</button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Active Filters Display */}
           {(filters.size || filters.brand || filters.city || filters.priceMin || filters.priceMax) && (
             <div className="mb-6 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex flex-wrap gap-2">
-                  {filters.size && (
-                    <span className="px-2 py-1 bg-black text-white text-xs rounded">
-                      Size: {filters.size}
-                    </span>
-                  )}
-                  {filters.brand && (
-                    <span className="px-2 py-1 bg-black text-white text-xs rounded">
-                      Brand: {filters.brand}
-                    </span>
-                  )}
-                  {filters.city && (
-                    <span className="px-2 py-1 bg-black text-white text-xs rounded">
-                      City: {filters.city}
-                    </span>
-                  )}
+                  {filters.size && <span className="px-2 py-1 bg-black text-white text-xs rounded">Size: {filters.size}</span>}
+                  {filters.brand && <span className="px-2 py-1 bg-black text-white text-xs rounded">Brand: {filters.brand}</span>}
+                  {filters.city && <span className="px-2 py-1 bg-black text-white text-xs rounded">City: {filters.city}</span>}
                   {(filters.priceMin || filters.priceMax) && (
-                    <span className="px-2 py-1 bg-black text-white text-xs rounded">
-                      Price: ₹{filters.priceMin || 0} - ₹{filters.priceMax || '∞'}
-                    </span>
+                    <span className="px-2 py-1 bg-black text-white text-xs rounded">Price: ₹{filters.priceMin || 0} - ₹{filters.priceMax || '∞'}</span>
                   )}
                 </div>
                 <button
-                  onClick={() => setFilters({
-                    city: '',
-                    size: '',
-                    brand: '',
-                    priceMin: '',
-                    priceMax: '',
-                    showBrands: false
-                  })}
+                  onClick={() => setFilters({ city: '', size: '', brand: '', priceMin: '', priceMax: '', showBrands: false })}
                   className="text-xs text-gray-600 hover:text-black underline"
-                >
-                  Clear All
-                </button>
+                >Clear All</button>
               </div>
             </div>
           )}
 
           {cars.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No cars found matching your criteria
-            </div>
+            <div className="text-center py-8 text-gray-500">No cars found matching your criteria</div>
           ) : (
             cars.map((car, i) => (
-              <Link to={`/model/${car._id}`} key={car._id || i}>
-                <CarCard 
-                  title={`${car.make} ${car.model}`}
-                  price={car.dailyRate}
-                  image={car.images && car.images.length > 0 ? `/images/${car.images[0]}` : '/images/compact.jpg'}
-                  car={car}
-                />
-              </Link>
+              <CarCard
+                key={car._id || i}
+                title={`${car.make} ${car.model}`}
+                price={car.dailyRate}
+                image={car.images?.[0]}
+                car={car}
+              />
             ))
           )}
         </div>

@@ -1,10 +1,25 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
-const ContactSchema = new mongoose.Schema({
-  name:      { type: String, required: true, trim: true },
-  email:     { type: String, required: true, lowercase: true, trim: true },
-  message:   { type: String, required: true },
-  createdAt: { type: Date,   default: Date.now }
+const contactSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  message: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-export default mongoose.model('Contact', ContactSchema);
+module.exports = mongoose.model('Contact', contactSchema);

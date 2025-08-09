@@ -1,6 +1,30 @@
 import React from "react";
 
 export default function ContactPage() {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const name = e.target.name.value;
+    const email = e.target.email.value;
+    const message = e.target.message.value;
+
+    try {
+      const response = await fetch("http://localhost:5000/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, message }),
+      });
+
+      const data = await response.json();
+      alert(data.message || "Message sent successfully!");
+      e.target.reset();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      alert("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-r from-indigo-50 to-purple-50 p-6">
       <div className="text-center mb-12">
@@ -14,11 +38,13 @@ export default function ContactPage() {
         {/* Left: Message Form */}
         <div className="bg-white p-8 rounded-xl shadow-md">
           <h2 className="text-2xl font-semibold mb-6">Send us a Message</h2>
-          <form className="space-y-5">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             <div>
               <label className="text-sm font-medium">Name</label>
               <input
+                name="name"
                 type="text"
+                required
                 placeholder="Enter your name"
                 className="w-full mt-1 px-4 py-2 border rounded-lg"
               />
@@ -27,7 +53,9 @@ export default function ContactPage() {
             <div>
               <label className="text-sm font-medium">Email</label>
               <input
+                name="email"
                 type="email"
+                required
                 placeholder="Enter your email"
                 className="w-full mt-1 px-4 py-2 border rounded-lg"
               />
@@ -36,7 +64,9 @@ export default function ContactPage() {
             <div>
               <label className="text-sm font-medium">Message</label>
               <textarea
+                name="message"
                 rows="4"
+                required
                 placeholder="Tell us how we can help you..."
                 className="w-full mt-1 px-4 py-2 border rounded-lg"
               ></textarea>

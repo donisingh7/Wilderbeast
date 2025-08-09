@@ -116,15 +116,12 @@ export default function ProfilePage() {
             <Link to="/homepage" className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
               <Home size={18} /> <span>Home</span>
             </Link>
-            <div className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
-              <User size={18} /> <span>Bookings</span>
-            </div>
-            <div className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
-              <Clock size={18} /> <span>Rental History</span>
-            </div>
-            <div className="flex items-center space-x-3 px-3 py-2 rounded bg-gray-100 font-medium text-black">
+            <Link to="/booking-history" className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
+              <Clock size={18} /> <span>Booking History</span>
+            </Link>
+            <Link to="/profile" className="flex items-center space-x-3 px-3 py-2 rounded bg-gray-100 font-medium text-black">
               <User size={18} /> <span>Profile</span>
-            </div>
+            </Link>
             <div className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-100 cursor-pointer">
               <CreditCard size={18} /> <span>Payment Methods</span>
             </div>
@@ -160,11 +157,11 @@ export default function ProfilePage() {
         )}
 
         <div className="flex items-center space-x-6 mb-10">
-          <img
-            src="https://api.dicebear.com/6.x/adventurer/svg?seed=sophia"
-            alt="Avatar"
-            className="w-24 h-24 rounded-full"
-          />
+          {/* --- CHANGES START HERE --- */}
+          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+            <User size={48} className="text-gray-500" />
+          </div>
+          {/* --- CHANGES END HERE --- */}
           <div>
             <h3 className="text-xl font-semibold">{user?.name || 'User'}</h3>
             <p className="text-sm text-gray-500">

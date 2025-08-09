@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Globe, HelpCircle } from "lucide-react";
+// 1. User icon ko import karein
+import { User } from "lucide-react"; 
 
 const Nav = () => {
   return (
@@ -15,13 +16,15 @@ const Nav = () => {
       <div className="flex items-center space-x-6 text-sm text-gray-700">
         <a href="#" className="hover:underline">Rent a car</a>
         <a href="/about" className="hover:underline">About Us</a>
+        
+        {/* --- CHANGES START HERE --- */}
         <Link to="/profile">
-          <img
-            src="https://randomuser.me/api/portraits/women/79.jpg"
-            alt="avatar"
-            className="w-8 h-8 rounded-full cursor-pointer"
-          />
+          {/* 2. Image tag ko hata kar icon add karein */}
+          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center cursor-pointer hover:bg-gray-300">
+            <User size={20} className="text-gray-600" />
+          </div>
         </Link>
+        {/* --- CHANGES END HERE --- */}
       </div>
     </nav>
   );

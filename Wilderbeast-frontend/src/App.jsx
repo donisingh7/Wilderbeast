@@ -6,7 +6,9 @@ import BookingPage from "./BookingPage/index.jsx";
 import ProfilePage from "./ProfilePage/index.jsx";
 import ConfirmationFinalPage from "./ConfirmationPage/index.jsx";
 import ContactPage from "./ContactPage";
-import AboutPage from "./AboutPage";
+import AboutPage from "./AboutPage"; 
+import CartPage from "./CartPage";
+import BookingHistoryPage from "./BookingHistoryPage";
 
 
 // 🔽 Import login and register pages
@@ -16,12 +18,12 @@ import RegisterPage from "./AuthPages/RegisterPage";
 const App = () => (
   <Router>
     <Routes>
-      {/* 🔽 Auth Routes - Login as default */}
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/" element={<CarRentalHome />} />
+<Route path="/login" element={<LoginPage />} />
+<Route path="/register" element={<RegisterPage />} />
 
-      {/* 🔽 Main App Routes */}
+
+  
       <Route path="/homepage" element={<CarRentalHome />} />
       <Route path="/choose-car" element={<ChooseCar />} />
       <Route path="/model" element={<TeslaModelPage />} />
@@ -31,6 +33,9 @@ const App = () => (
       <Route path="/confirm" element={<ConfirmationFinalPage />} />
       <Route path="/contact" element={<ContactPage />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/booking-history" element={<BookingHistoryPage />} />
+
 
     </Routes>
   </Router>

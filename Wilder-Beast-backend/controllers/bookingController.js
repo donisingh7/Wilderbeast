@@ -1,75 +1,96 @@
 const Booking = require('../models/Booking');
 
-
+// Creates a new booking
 exports.createBooking = async (req, res) => {
   try {
-    const { user, car, pickupDate, dropoffDate, extras, protection, totalAmount } = req.body;
+    const userId = (req.user && (req.user._id || req.user.userId));
 
-    const booking = new Booking({
-      user,
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized: missing user on request' });
+    }
+
+    const {
       car,
       pickupDate,
       dropoffDate,
-      extras,
-      protection,
-      totalAmount
+      totalAmount,
+    } = req.body;
+
+    if (!car || !pickupDate || !dropoffDate || typeof totalAmount !== 'number') {
+      return res.status(400).json({ message: 'Missing or invalid booking data' });
+    }
+
+    const booking = new Booking({
+      user: userId,
+      car,
+      pickupDate,
+      dropoffDate,
+      totalAmount,
     });
 
     await booking.save();
-    res.status(201).json(booking);
+    const populated = await Booking.findById(booking._id)
+      .populate('car', 'make model dailyRate');
+
+    return res.status(201).json(populated);
   } catch (err) {
     console.error('Error in createBooking:', err);
-    res.status(500).json({ message: 'Server error creating booking' });
+    return res.status(500).json({ message: 'Server error creating booking', error: err.message });
   }
 };
 
+// Gets booking history for the logged-in user
+exports.getBookingHistory = async (req, res) => {
+  try {
+    const userId = req.user._id;
 
+    const bookings = await Booking.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .populate('car', 'make model dailyRate');
+
+    if (!bookings) {
+      return res.json([]);
+    }
+
+    return res.status(200).json(bookings);
+  } catch (err) {
+    console.error('Error in getBookingHistory:', err);
+    return res.status(500).json({ message: 'Server error fetching booking history' });
+  }
+};
+
+// Gets a single booking by its ID
 exports.getBookingById = async (req, res) => {
   try {
     const { bookingId } = req.params;
     const booking = await Booking.findById(bookingId)
       .populate('user', 'name email')
-      .populate('car', 'make model dailyRate')
-      .populate('extras', 'name dailyPrice');
-    if (!booking) return res.status(404).json({ message: 'Booking not found' });
-    res.json(booking);
+      .populate('car', 'make model dailyRate');
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    return res.json(booking);
   } catch (err) {
     console.error('Error in getBookingById:', err);
-    res.status(500).json({ message: 'Server error fetching booking' });
+    return res.status(500).json({ message: 'Server error fetching booking', error: err.message });
   }
 };
 
-
+// Lists bookings, can be filtered by user ID in query
 exports.listBookings = async (req, res) => {
-  console.log('🔍 listBookings called, query:', req.query);
-
   try {
     const filter = {};
-    if (req.query.user) {
-      filter.user = req.query.user;
-    }
-    console.log('🔍 Using filter:', filter);
+    if (req.query.user) filter.user = req.query.user;
 
-    // Make sure Booking.find actually exists
-    console.log('🔧 Booking.find is', typeof Booking.find);
-
-    const bookings = await Booking
-      .find(filter)
+    const bookings = await Booking.find(filter)
       .sort('-createdAt')
-      .populate('car', 'make model dailyRate')
-      .populate('extras', 'name dailyPrice')
-      .exec();
+      .populate('car', 'make model dailyRate');
 
-    console.log('✅ Found bookings:', bookings);
     return res.json(bookings);
-
   } catch (err) {
-    console.error('🔥 listBookings error:', err.stack);
-    return res
-      .status(500)
-      .json({
-        message: 'Server error fetching bookings',
-        error: err.message   // include the real error message in the JSON
-      });
+    console.error('Error in listBookings:', err);
+    return res.status(500).json({ message: 'Server error fetching bookings', error: err.message });
   }
 };

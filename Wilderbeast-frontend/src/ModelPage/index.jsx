@@ -1,257 +1,239 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
-import Navbar from "../custom/NewNavbar";
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import Navbar from '../BookingPage/Nav';
+import { Star } from 'lucide-react';
 
-const TeslaModelPage = () => {
-  const navigate = useNavigate();
+export default function ModelPage() {
   const { carId } = useParams();
-  const location = useLocation();
+  const navigate = useNavigate();
   const [car, setCar] = useState(null);
   const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  const carFromState = location.state?.car;
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchCarAndReviews();
+    async function fetchData() {
+      const resCar = await fetch(`http://localhost:5000/api/cars/${carId}`);
+      const resRev = await fetch(`http://localhost:5000/api/reviews?car=${carId}`);
+      const carData = await resCar.json();
+      const revData = await resRev.json();
+      setCar(carData);
+      setReviews(revData);
+    }
+    fetchData();
   }, [carId]);
 
-  const fetchCarAndReviews = async () => {
-    try {
-      setLoading(true);
-      
-      if (carFromState) {
-        setCar(carFromState);
-      } else if (carId) {
-        const carResponse = await fetch(`http://localhost:5000/api/cars/${carId}`);
-        if (carResponse.ok) {
-          const carData = await carResponse.json();
-          setCar(carData);
-        }
-      }
+  const handleRentNow = () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in to rent a car.");
+      navigate('/login');
+      return;
+    }
+    navigate('/booking', { state: { car } });
+  };
 
-      const reviewsResponse = await fetch(`http://localhost:5000/api/reviews?car=${carId || carFromState?._id}`);
-      if (reviewsResponse.ok) {
-        const reviewsData = await reviewsResponse.json();
-        setReviews(reviewsData);
+  const handleAddToCart = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in to add a car to your cart.");
+      navigate('/login');
+      return;
+    }
+    try {
+      const res = await fetch("http://localhost:5000/api/cart", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ carId: car._id })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert("Car added to cart!");
+      } else {
+        alert(data.message || "Failed to add car to cart");
       }
     } catch (err) {
-      setError('Failed to load car details');
-    } finally {
-      setLoading(false);
+      console.error(err);
+      alert("Error adding to cart");
     }
   };
 
-  const calculateAverageRating = () => {
-    if (reviews.length === 0) return 4.7; // Default rating
-    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-    return (total / reviews.length).toFixed(1);
-  };
-
-  const getRatingDistribution = () => {
-    const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    reviews.forEach(review => {
-      distribution[review.rating] = (distribution[review.rating] || 0) + 1;
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert("Please log in to submit a review.");
+      navigate('/login');
+      return;
+    }
+    setSubmitting(true);
+    const res = await fetch('http://localhost:5000/api/reviews', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ car: carId, rating, comment })
     });
-    return distribution;
+    const newRev = await res.json();
+    if (res.ok) {
+      setReviews([newRev, ...reviews]);
+      setComment('');
+      setRating(5);
+    } else {
+      alert(newRev.message);
+    }
+    setSubmitting(false);
   };
 
-  if (loading) {
-    return (
-      <div className="bg-white text-black">
-        <Navbar />
-        <div className="max-w-5xl mx-auto p-4">
-          <div className="text-center py-8">Loading car details...</div>
-        </div>
-      </div>
-    );
-  }
+  if (!car) return <div className="text-center mt-10">Loading...</div>;
 
-  if (error) {
-    return (
-      <div className="bg-white text-black">
-        <Navbar />
-        <div className="max-w-5xl mx-auto p-4">
-          <div className="text-red-600 text-center py-8">{error}</div>
-        </div>
-      </div>
-    );
-  }
+  const {
+    make, model, year, transmission, seats, dailyRate, features = [],
+    images = [], fuelType = 'Petrol', color = 'Black'
+  } = car;
 
-  const carData = car || {
-    make: 'Tesla',
-    model: 'Model 3',
-    year: '2023',
-    dailyRate: 89,
-    image: '../src/assets/images/tesla.jpg',
-    description: 'This Tesla Model 3 is a sleek and modern electric vehicle, perfect for city driving and longer trips. It features a spacious interior, advanced technology, and a smooth, quiet ride. Enjoy the benefits of electric driving with zero emissions and instant torque.'
-  };
-
-  const getCarImage = () => {
-    if (car?.images && car.images.length > 0) {
-      // Use public folder path
-      return `/images/${car.images[0]}`;
-    }
-    if (car?.image) {
-      return car.image;
-    }
-    const make = car?.make || carData.make;
-    switch (make.toLowerCase()) {
-      case 'toyota':
-        return '/images/compact.jpg';
-      case 'bmw':
-        return '/images/bmw.jpg';
-      case 'tesla':
-        return '/images/tesla.jpg';
-      default:
-        return '/images/compact.jpg';
-    }
-  };
-
-  const ratingDistribution = getRatingDistribution();
-  const averageRating = calculateAverageRating();
+  const averageRating = reviews.length
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : 0;
 
   return (
-    <div className="bg-white text-black">
+    <div className="bg-white min-h-screen">
       <Navbar />
 
-      <div className="max-w-5xl mx-auto p-4">
-        <p className="text-sm text-gray-600 mb-2">
-          <a href="#" className="text-blue-600">
-            Rent
-          </a>{" "}
-          / <span className="font-semibold">{carData.year} {carData.make} {carData.model}</span>
+      {/* Hero Image */}
+      {images.length > 0 && (
+        <img
+          src={images[0].startsWith('http') ? images[0] : `/images/${images[0]}`}
+          alt="Car"
+          className="w-full max-h-[500px] object-contain bg-white"
+        />
+      )}
+
+      {/* Car Title & Description */}
+      <div className="max-w-5xl mx-auto px-6 py-8 space-y-4">
+        <h1 className="text-3xl font-bold">{year} {make} {model}</h1>
+        <p className="text-gray-600">
+          This {make} {model} is a sleek and modern vehicle, ideal for city driving and longer trips.
+          It features a stylish design, comfortable seating, and advanced features for a smooth ride.
         </p>
 
-        <div className="w-full h-auto bg-gray-200 mb-6 rounded-lg flex justify-center items-center">
-          <img
-            src={getCarImage()}
-            alt={`${carData.make} ${carData.model}`}
-            className="w-full h-auto rounded-md shadow"
+        {/* Specifications */}
+        <h2 className="text-2xl font-semibold mt-8">Specifications</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-gray-700 mt-2">
+          <div><strong>Make:</strong> {make}</div>
+          <div><strong>Model:</strong> {model}</div>
+          <div><strong>Year:</strong> {year}</div>
+          <div><strong>Fuel Type:</strong> {fuelType}</div>
+          <div><strong>Transmission:</strong> {transmission}</div>
+          <div><strong>Seats:</strong> {seats}</div>
+
+          {/* Styled color badge */}
+          <div className="flex items-center gap-2">
+            <strong>Color:</strong>
+            <span
+              className="px-2 py-1 rounded border text-sm font-medium"
+              style={{
+                backgroundColor: color,
+                color: ['white', '#ffffff'].includes(color.toLowerCase()) ? '#000' : '#fff',
+                border: '1px solid #ccc'
+              }}
+            >
+              {color}
+            </span>
+          </div>
+
+          <div><strong>Features:</strong> {features.join(', ') || '—'}</div>
+        </div>
+
+        {/* Rental Terms */}
+        <h2 className="text-2xl font-semibold mt-8">Rental Terms</h2>
+        <div className="grid grid-cols-2 gap-4 text-gray-700 mt-2">
+          <div><strong>Daily Rate:</strong> ₹{dailyRate}/day</div>
+          <div><strong>Security Deposit:</strong> ₹5,000</div>
+          <div><strong>Insurance:</strong> Optional</div>
+        </div>
+
+        {/* Customer Reviews */}
+        <h2 className="text-2xl font-semibold mt-8">Customer Reviews</h2>
+        <div className="flex items-center gap-4 mt-2">
+          <span className="text-4xl font-bold">{averageRating}</span>
+          <div className="text-yellow-500 flex gap-1">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} fill={i < Math.round(averageRating) ? 'currentColor' : 'none'} />
+            ))}
+          </div>
+          <span className="text-gray-500">({reviews.length} reviews)</span>
+        </div>
+
+        {/* Review Form */}
+        <form onSubmit={handleReviewSubmit} className="mt-6 space-y-3">
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Write your review..."
+            className="w-full p-3 border rounded"
+            required
           />
+          <div className="flex gap-3 items-center">
+            <label className="text-sm">Rating:</label>
+            <select
+              value={rating}
+              onChange={(e) => setRating(Number(e.target.value))}
+              className="border p-2 rounded"
+            >
+              {[5, 4, 3, 2, 1].map(n => (
+                <option key={n} value={n}>{n} Star{n > 1 && 's'}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            >
+              {submitting ? 'Submitting...' : 'Submit Review'}
+            </button>
+          </div>
+        </form>
+
+        {/* Review List */}
+        <div className="space-y-6 mt-6">
+          {reviews.length === 0 && (
+            <p className="text-gray-500">No reviews yet.</p>
+          )}
+          {reviews.map((r) => (
+            <div key={r._id} className="border p-4 rounded-lg">
+              <div className="flex justify-between items-center mb-1">
+                <p className="font-semibold">{r.user?.name || 'Anonymous'}</p>
+                <p className="text-yellow-500 flex items-center gap-1">
+                  <Star size={16} fill="currentColor" /> {r.rating}/5
+                </p>
+              </div>
+              <p className="text-gray-700">{r.comment}</p>
+            </div>
+          ))}
         </div>
 
-        <h2 className="text-2xl font-bold mb-2">{carData.year} {carData.make} {carData.model}</h2>
-        <p className="mb-6 text-gray-700">
-          {carData.description}
-        </p>
+<div className="mt-10 flex justify-between">
+  <button
+    onClick={handleRentNow}
+    className="bg-black text-white px-6 py-2 rounded-lg text-base hover:bg-gray-800"
+  >
+    Rent Now
+  </button>
+  <button
+    onClick={handleAddToCart}
+    className="bg-black text-white px-6 py-2 rounded-lg text-base hover:bg-gray-800"
+  >
+    Add to Cart
+  </button>
+</div>
 
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-3">Specifications</h3>
-          <div className="grid grid-cols-2 gap-y-3 text-sm text-gray-800">
-            <div><strong>Make</strong>: {carData.make}</div>
-            <div><strong>Model</strong>: {carData.model}</div>
-            <div><strong>Year</strong>: {carData.year}</div>
-            <div><strong>Fuel Type</strong>: {carData.fuelType || 'Electric'}</div>
-            <div><strong>Transmission</strong>: {carData.transmission || 'Automatic'}</div>
-            <div><strong>Mileage</strong>: {carData.mileage || '15,000 miles'}</div>
-            <div><strong>Color</strong>: {carData.color || 'White'}</div>
-            <div><strong>Features</strong>: {carData.features || 'Autopilot, Premium Sound System, Navigation'}</div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-3">Rental Terms</h3>
-          <div className="grid grid-cols-2 gap-y-2 text-sm text-gray-800">
-            <div><strong>Daily Rate</strong>: ${carData.dailyRate}/day</div>
-            <div><strong>Security Deposit</strong>: $500</div>
-            <div><strong>Insurance</strong>: Optional</div>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <h3 className="text-xl font-semibold mb-3">Customer Reviews</h3>
-          <div className="flex items-center mb-2">
-            <span className="text-3xl font-bold">{averageRating}</span>
-            <span className="ml-2 text-sm text-gray-500">★ {reviews.length} reviews</span>
-          </div>
-
-          <div className="space-y-1 text-sm text-gray-700 mb-4">
-            {[5, 4, 3, 2, 1].map((star, i) => {
-              const count = ratingDistribution[star] || 0;
-              const percentage = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
-              return (
-                <div key={i} className="flex items-center gap-2">
-                  <span>{star}</span>
-                  <div className="w-40 h-2 bg-gray-200 rounded">
-                    <div
-                      className="bg-black h-full rounded"
-                      style={{ width: `${percentage}%` }}
-                    ></div>
-                  </div>
-                  <span>{percentage}%</span>
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="mb-6 space-y-4">
-            {reviews.length > 0 ? (
-              reviews.slice(0, 2).map((review) => (
-                <div key={review._id}>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <img
-                      src={`https://randomuser.me/api/portraits/${review.user.gender || 'men'}/${review.user._id % 100}.jpg`}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span>{review.user.name}</span>
-                    <span className="text-gray-400">• {new Date(review.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-gray-700 mt-1">
-                    {review.comment}
-                  </p>
-                </div>
-              ))
-            ) : (
-              // Show default reviews if no API reviews
-              <>
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <img
-                      src="https://randomuser.me/api/portraits/men/32.jpg"
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span>Ethan Carter</span>
-                    <span className="text-gray-400">• May 15, 2024</span>
-                  </div>
-                  <p className="text-gray-700 mt-1">
-                    The Tesla Model 3 was an absolute pleasure to drive! The
-                    electric acceleration is exhilarating, and the car is incredibly
-                    comfortable and quiet. The autopilot feature made highway
-                    driving a breeze. Highly recommend!
-                  </p>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-medium">
-                    <img
-                      src="https://randomuser.me/api/portraits/women/44.jpg"
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span>Olivia Bennett</span>
-                    <span className="text-gray-400">• April 22, 2024</span>
-                  </div>
-                  <p className="text-gray-700 mt-1">
-                    Overall, a great experience renting the Tesla Model 3. The car
-                    was clean and well-maintained. The only minor issue was the
-                    navigation system, which could be a bit more intuitive.
-                  </p>
-                </div>
-              </>
-            )}
-          </div>
-
-          <button
-            onClick={() => navigate('/booking', { state: { car: carData } })}
-            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-          >
-            Rent Now
-          </button>
-        </div>
       </div>
     </div>
   );
-};
-
-export default TeslaModelPage;
+}
