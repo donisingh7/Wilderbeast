@@ -27,7 +27,6 @@ const BookingHistoryPage = () => {
 
         const data = await response.json();
         
-        // FIX: Use the correct date fields from your API (pickupDate, dropoffDate)
         const processedData = data.map(booking => {
             const now = new Date();
             const dropoffDate = new Date(booking.dropoffDate);
@@ -119,12 +118,10 @@ const BookingHistoryPage = () => {
                 <div className="flex-grow grid grid-cols-2 gap-4 text-sm">
                     <div>
                         <p className="font-semibold text-gray-700">Check-in</p>
-                        {/* FIX: Use pickupDate */}
                         <p className="text-gray-500">{new Date(booking.pickupDate).toLocaleDateString()}</p>
                     </div>
                      <div>
                         <p className="font-semibold text-gray-700">Check-out</p>
-                        {/* FIX: Use dropoffDate */}
                         <p className="text-gray-500">{new Date(booking.dropoffDate).toLocaleDateString()}</p>
                     </div>
                 </div>

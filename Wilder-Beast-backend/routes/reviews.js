@@ -7,12 +7,12 @@ const {
   deleteReview 
 } = require("../controllers/reviewController");
 
-const verifyToken = require("../middleware/auth"); // ✅ Corrected
+const verifyToken = require("../middleware/auth"); 
 
 router.get("/", listReviews);
 router.get("/:reviewId", getReviewById);
 
-router.post("/", verifyToken, createReview);       // ✅ Fixed
+router.post("/", verifyToken, createReview);       
 router.put("/:reviewId", verifyToken, updateReview);
 router.delete("/:reviewId", verifyToken, deleteReview);
 

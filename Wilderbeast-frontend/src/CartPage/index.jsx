@@ -5,7 +5,6 @@ export default function CartPage() {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
 
-  // Fetch the user's cart from the server
   useEffect(() => {
     const fetchCart = async () => {
       const token = localStorage.getItem("token");
@@ -20,16 +19,12 @@ export default function CartPage() {
         });
 
         if (!res.ok) {
-            // If the response is not OK, log the status and return
-            console.error("Failed to fetch cart:", res.status, await res.text());
-            return;
+          console.error("Failed to fetch cart:", res.status, await res.text());
+          return;
         }
 
         const data = await res.json();
-        // Log the data received from the backend to see what's in it
-        console.log("Fetched cart data:", data);
-        
-        // Ensure data.items is an array before setting the state
+        console.log("Fetched API data:", data); 
         setCart(data.items || []);
 
       } catch (error) {
@@ -38,33 +33,41 @@ export default function CartPage() {
     };
 
     fetchCart();
-  }, [navigate]); // Dependency array is fine, but you could use [] if navigate is stable.
+  }, [navigate]);
 
-  // Remove an item from the cart
   const removeFromCart = async (carId) => {
     const token = localStorage.getItem("token");
     if (!token) {
-        navigate("/login");
-        return;
+      navigate("/login");
+      return;
     }
     
     try {
-        const res = await fetch(`http://localhost:5000/api/cart/${carId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` }
-        });
+      const res = await fetch(`http://localhost:5000/api/cart/${carId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-        if (res.ok) {
-            // **FIX:** Instead of relying on the response, update the state locally.
-            // This provides immediate feedback to the user.
-            setCart((prevCart) => prevCart.filter((item) => item.car._id !== carId));
-        } else {
-            console.error("Failed to remove item from cart:", res.status);
-            // Optionally, show an error message to the user
-        }
+      if (res.ok) {
+        setCart((prevCart) => prevCart.filter((item) => item.car && item.car._id !== carId));
+      } else {
+        console.error("Failed to remove item from cart:", res.status);
+      }
     } catch (error) {
-        console.error("An error occurred while removing the item:", error);
+      console.error("An error occurred while removing the item:", error);
     }
+  };
+
+  const handleProceedToBooking = () => {
+    console.log("Attempting to book with cart state:", cart);
+
+    if (!cart.length || !cart[0]?.car?._id) {
+      alert("Your cart is empty or the car details are missing. Please try adding the car again.");
+      console.error("Booking failed. Cart state:", cart);
+      return;
+    }
+    
+    navigate('/booking', { state: { car: cart[0].car } });
   };
 
   return (
@@ -75,12 +78,17 @@ export default function CartPage() {
       ) : (
         <div className="space-y-4">
           {cart.map((item) => (
-            // Ensure item and item.car exist to prevent errors
-            item && item.car && (
+            item?.car && (
               <div key={item.car._id} className="border p-4 rounded-lg flex justify-between items-center transition-shadow hover:shadow-lg">
                 <div>
-                  <h2 className="text-xl font-semibold text-gray-700">{item.car.make} {item.car.model}</h2>
+                  <h2 className="text-xl font-semibold text-gray-700">
+                    {item.car.make} {item.car.model}
+                  </h2>
                   <p className="text-gray-600">₹{item.car.dailyRate}/day</p>
+                  {/* ✅ Quantity Display */}
+                  {item.quantity > 1 && (
+                    <p className="text-gray-500 text-sm">Quantity: {item.quantity}</p>
+                  )}
                 </div>
                 <button
                   onClick={() => removeFromCart(item.car._id)}
@@ -93,7 +101,7 @@ export default function CartPage() {
           ))}
           <div className="pt-6 border-t mt-6 flex justify-end">
             <button
-              onClick={() => navigate("/booking")}
+              onClick={handleProceedToBooking}
               className="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors text-lg"
             >
               Proceed to Booking
