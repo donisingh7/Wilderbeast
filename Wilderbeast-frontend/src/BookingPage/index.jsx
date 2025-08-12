@@ -3,6 +3,8 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import Navbar from "./Nav";
 import { CalendarDays } from "lucide-react";
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 export default function BookingPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -10,7 +12,6 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // --- FIX: Check for car data on page load ---
   const car = location.state?.car;
 
   const [protection, setProtection] = useState("Basic");
@@ -27,7 +28,7 @@ export default function BookingPage() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/accessories')
+    fetch(`${API_URL}/api/accessories`)
       .then(res => res.json())
       .then(data => setAccessories(data))
       .catch(err => console.error(err));
@@ -72,7 +73,7 @@ export default function BookingPage() {
 
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:5000/api/bookings',{
+      const res = await fetch(`${API_URL}/api/bookings`,{
         method:'POST',
         headers:{
           'Content-Type':'application/json',
@@ -91,7 +92,6 @@ export default function BookingPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // --- FIX: If car data is missing, show an error message ---
   if (!car || !car._id) {
     return (
         <div className="min-h-screen bg-white">
@@ -135,7 +135,6 @@ export default function BookingPage() {
           </div>
         </section>
 
-        {/* ... (rest of your component code remains the same) ... */}
         <section className="mb-8">
           <h2 className="font-semibold text-lg mb-4">2. Protection</h2>
           {['Basic','Standard','Premium'].map(opt=> (

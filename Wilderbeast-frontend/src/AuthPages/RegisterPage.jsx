@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Auth.css';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -25,7 +27,6 @@ const RegisterPage = () => {
     setLoading(true);
     setError('');
 
-    // Validate password confirmation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       setLoading(false);
@@ -33,7 +34,7 @@ const RegisterPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,11 +52,9 @@ const RegisterPage = () => {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Store token in localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
 
-      // Redirect to home page or dashboard
       navigate('/homepage');
     } catch (err) {
       setError(err.message);

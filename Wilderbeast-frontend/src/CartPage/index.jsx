@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 export default function CartPage() {
   const [cart, setCart] = useState([]);
@@ -14,7 +16,7 @@ export default function CartPage() {
       }
 
       try {
-        const res = await fetch("http://localhost:5000/api/cart", {
+        const res = await fetch(`${API_URL}/api/cart`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -43,18 +45,24 @@ export default function CartPage() {
     }
     
     try {
-      const res = await fetch(`http://localhost:5000/api/cart/${carId}`, {
+      const res = await fetch(`${API_URL}/api/cart/${carId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (res.ok) {
-        setCart((prevCart) => prevCart.filter((item) => item.car && item.car._id !== carId));
+        // --- FIX START ---
+        // Purane state ko filter karne ke bajaye, server se aaye naye cart ka istemal karein.
+        const updatedCart = await res.json();
+        setCart(updatedCart.items || []);
+        // --- FIX END ---
       } else {
         console.error("Failed to remove item from cart:", res.status);
+        alert("Could not remove the car. Please try again.");
       }
     } catch (error) {
       console.error("An error occurred while removing the item:", error);
+      alert("An error occurred. Please try again.");
     }
   };
 
@@ -85,7 +93,6 @@ export default function CartPage() {
                     {item.car.make} {item.car.model}
                   </h2>
                   <p className="text-gray-600">₹{item.car.dailyRate}/day</p>
-                  {/* ✅ Quantity Display */}
                   {item.quantity > 1 && (
                     <p className="text-gray-500 text-sm">Quantity: {item.quantity}</p>
                   )}

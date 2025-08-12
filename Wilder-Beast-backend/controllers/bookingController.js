@@ -1,6 +1,5 @@
 const Booking = require('../models/Booking');
 
-// Creates a new booking
 exports.createBooking = async (req, res) => {
   try {
     const userId = (req.user && (req.user._id || req.user.userId));
@@ -39,7 +38,6 @@ exports.createBooking = async (req, res) => {
   }
 };
 
-// Gets booking history for the logged-in user
 exports.getBookingHistory = async (req, res) => {
   try {
     const userId = req.user._id;
@@ -59,7 +57,6 @@ exports.getBookingHistory = async (req, res) => {
   }
 };
 
-// Gets a single booking by its ID
 exports.getBookingById = async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -78,7 +75,6 @@ exports.getBookingById = async (req, res) => {
   }
 };
 
-// Lists bookings, can be filtered by user ID in query
 exports.listBookings = async (req, res) => {
   try {
     const filter = {};

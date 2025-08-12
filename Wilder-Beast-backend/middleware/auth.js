@@ -1,4 +1,3 @@
-// middleware/auth.js
 const jwt = require('jsonwebtoken');
 
 module.exports = (req, res, next) => {
@@ -11,11 +10,10 @@ module.exports = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // Your tokens are signed as { userId: <ObjectId> }
     if (!decoded?.userId) {
       return res.status(401).json({ message: 'Invalid token payload' });
     }
-    req.user = { _id: decoded.userId }; // <-- controllers can now use req.user._id
+    req.user = { _id: decoded.userId }; 
     next();
   } catch (err) {
     console.error('Auth middleware error:', err.message);

@@ -9,16 +9,20 @@ import {
   Bus,
 } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const VehicleListing = () => {
   const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
+  // 1. Filters state updated to include new search fields
   const [filters, setFilters] = useState({
-    city: '',
+    location: '',
+    pickupDate: '',
+    dropoffDate: '',
     size: '',
     brand: '',
-    priceMin: '',
-    priceMax: '',
     showBrands: false,
   });
 
@@ -30,11 +34,15 @@ const VehicleListing = () => {
     try {
       setLoading(true);
       const queryParams = new URLSearchParams();
+      
+      // 2. Send all active filters to the backend
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
+        if (value && key !== 'showBrands') {
+          queryParams.append(key, value);
+        }
       });
 
-      const response = await fetch(`http://localhost:5000/api/cars?${queryParams}`);
+      const response = await fetch(`${API_URL}/api/cars?${queryParams}`);
       if (!response.ok) throw new Error('Failed to fetch cars');
       const data = await response.json();
       setCars(data);
@@ -47,6 +55,17 @@ const VehicleListing = () => {
 
   const handleFilterChange = newFilters => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      location: '',
+      pickupDate: '',
+      dropoffDate: '',
+      size: '',
+      brand: '',
+      showBrands: false,
+    });
   };
 
   if (loading) return (
@@ -131,19 +150,19 @@ const VehicleListing = () => {
             </div>
           )}
 
-          {(filters.size || filters.brand || filters.city || filters.priceMin || filters.priceMax) && (
+          {/* 3. Display for new filters has been added */}
+          {(filters.location || filters.pickupDate || filters.size || filters.brand) && (
             <div className="mb-6 p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex flex-wrap gap-2">
+                  {filters.location && <span className="px-2 py-1 bg-black text-white text-xs rounded">Location: {filters.location}</span>}
+                  {filters.pickupDate && <span className="px-2 py-1 bg-black text-white text-xs rounded">From: {filters.pickupDate}</span>}
+                  {filters.dropoffDate && <span className="px-2 py-1 bg-black text-white text-xs rounded">To: {filters.dropoffDate}</span>}
                   {filters.size && <span className="px-2 py-1 bg-black text-white text-xs rounded">Size: {filters.size}</span>}
                   {filters.brand && <span className="px-2 py-1 bg-black text-white text-xs rounded">Brand: {filters.brand}</span>}
-                  {filters.city && <span className="px-2 py-1 bg-black text-white text-xs rounded">City: {filters.city}</span>}
-                  {(filters.priceMin || filters.priceMax) && (
-                    <span className="px-2 py-1 bg-black text-white text-xs rounded">Price: ₹{filters.priceMin || 0} - ₹{filters.priceMax || '∞'}</span>
-                  )}
                 </div>
                 <button
-                  onClick={() => setFilters({ city: '', size: '', brand: '', priceMin: '', priceMax: '', showBrands: false })}
+                  onClick={clearFilters}
                   className="text-xs text-gray-600 hover:text-black underline"
                 >Clear All</button>
               </div>

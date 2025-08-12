@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../BookingPage/Nav';
 import { Star } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 export default function ModelPage() {
   const { carId } = useParams();
   const navigate = useNavigate();
@@ -15,8 +17,8 @@ export default function ModelPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const resCar = await fetch(`http://localhost:5000/api/cars/${carId}`);
-        const resRev = await fetch(`http://localhost:5000/api/reviews?car=${carId}`);
+        const resCar = await fetch(`${API_URL}/api/cars/${carId}`);
+        const resRev = await fetch(`${API_URL}/api/reviews?car=${carId}`);
         if (!resCar.ok) throw new Error('Car not found');
         const carData = await resCar.json();
         const revData = await resRev.json();
@@ -47,7 +49,7 @@ export default function ModelPage() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/cart", {
+      const res = await fetch(`${API_URL}/api/cart`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -76,7 +78,7 @@ export default function ModelPage() {
       return;
     }
     setSubmitting(true);
-    const res = await fetch('http://localhost:5000/api/reviews', {
+    const res = await fetch(`${API_URL}/api/reviews`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

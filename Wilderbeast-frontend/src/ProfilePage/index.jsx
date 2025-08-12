@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Home, User, Clock, CreditCard, LogOut, HelpCircle } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
 export default function ProfilePage() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
@@ -63,7 +65,7 @@ export default function ProfilePage() {
       setSuccess('');
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`http://localhost:5000/api/users/${user._id}`, {
+      const response = await fetch(`${API_URL}/api/users/${user._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -157,11 +159,9 @@ export default function ProfilePage() {
         )}
 
         <div className="flex items-center space-x-6 mb-10">
-          {/* --- CHANGES START HERE --- */}
           <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
             <User size={48} className="text-gray-500" />
           </div>
-          {/* --- CHANGES END HERE --- */}
           <div>
             <h3 className="text-xl font-semibold">{user?.name || 'User'}</h3>
             <p className="text-sm text-gray-500">

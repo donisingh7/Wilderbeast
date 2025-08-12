@@ -1,16 +1,16 @@
-
 const Car = require('../models/Car');
-
+const Booking = require('../models/Booking'); 
 
 exports.listCars = async (req, res) => {
   try {
-    const { city, size, brand, priceMin, priceMax } = req.query;
+    
+    const { city, size, brand, priceMin, priceMax, location, pickupDate, dropoffDate } = req.query;
     const filter = {};
 
-    if (city) {
-      filter['location.city'] = new RegExp(city, 'i');
+    const locationQuery = city || location;
+    if (locationQuery) {
+      filter['location.city'] = new RegExp(locationQuery, 'i');
     }
-
 
     if (size) {
       if (size === 'small')      filter.seats = 2;
@@ -28,8 +28,24 @@ exports.listCars = async (req, res) => {
       if (priceMax) filter.dailyRate.$lte = Number(priceMax);
     }
 
-    const cars = await Car.find(filter).limit(100);
-    res.json(cars);
+    let availableCars = await Car.find(filter).limit(100);
+
+    if (pickupDate && dropoffDate) {
+      const start = new Date(pickupDate);
+      const end = new Date(dropoffDate);
+
+      const conflictingBookings = await Booking.find({
+        $or: [
+          { pickupDate: { $lt: end }, dropoffDate: { $gt: start } }
+        ]
+      });
+      
+      const bookedCarIds = conflictingBookings.map(booking => booking.car.toString());
+      
+      availableCars = availableCars.filter(car => !bookedCarIds.includes(car._id.toString()));
+    }
+
+    res.json(availableCars);
 
   } catch (err) {
     console.error('Error in listCars:', err);

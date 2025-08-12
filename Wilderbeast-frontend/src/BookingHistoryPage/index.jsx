@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Car, Calendar, CheckCircle, XCircle, Clock } from 'lucide-react';
 
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 const BookingHistoryPage = () => {
   const [bookings, setBookings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -17,7 +19,7 @@ const BookingHistoryPage = () => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/bookings', {
+        const response = await fetch(`${API_URL}/api/bookings`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 

@@ -3,7 +3,7 @@ const Review = require('../models/Review');
 exports.createReview = async (req, res) => {
   try {
     const { car, rating, comment } = req.body;
-    const user = req.user._id; // From auth middleware
+    const user = req.user._id; 
 
     const review = new Review({
       user,
